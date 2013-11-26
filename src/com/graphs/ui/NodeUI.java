@@ -3,7 +3,9 @@ package com.graphs.ui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -55,11 +57,15 @@ public class NodeUI extends FormUI {
 	public void renderForm(Graphics g) {
 		rect = new Rectangle(2 * radius, 2 * radius);
 		rect.setLocation(center.x - radius, center.y - radius);
-		g.setColor(formColor);
-		g.fillOval(rect.x, rect.y, 2 * radius, 2 * radius);
-		g.setColor(labelColor);
-		// Calcul des coordonnées du 
-		g.drawString(label, center.x - 3, center.y + 2);
+		Graphics2D g2d = (Graphics2D)g;
+		g2d.setColor(formColor);
+		g2d.fillOval(rect.x, rect.y, 2 * radius, 2 * radius);
+		g2d.setColor(labelColor);
+		// Calcul des coordonnées sur lesquelles placer le texte
+		FontMetrics fm = g2d.getFontMetrics();
+		int hd = fm.getHeight();
+		int wd = fm.stringWidth(label);
+		g.drawString(label, center.x - wd / 2, center.y + hd / 2 - fm.getDescent());
 	}
 
 	@Override

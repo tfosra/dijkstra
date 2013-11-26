@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -50,6 +51,33 @@ public class GraphFrame extends JFrame {
 		JButton linkButton = new JButton(LINK_BUTTON_ICON);
 		JButton deleteButton = new JButton(DELETE_BUTTON_ICON);
 		JButton normalButton = new JButton(NORMAL_BUTTON_ICON);
+		JButton pathButton = new JButton("Path");
+		
+		nodeButton.setBorder(BorderFactory.createEtchedBorder());
+		nodeButton.setBorderPainted(false);
+		nodeButton.setToolTipText("Add a node");
+		nodeButton.setFocusable(false);
+		
+		normalButton.setBorder(BorderFactory.createEtchedBorder());
+		normalButton.setBorderPainted(false);
+		normalButton.setToolTipText("Normal Cursor");
+		normalButton.setFocusable(false);
+		
+		linkButton.setBorder(BorderFactory.createEtchedBorder());
+		linkButton.setBorderPainted(false);
+		linkButton.setToolTipText("Add a link");
+		linkButton.setFocusable(false);
+		
+		deleteButton.setBorder(BorderFactory.createEtchedBorder());
+		deleteButton.setBorderPainted(false);
+		deleteButton.setToolTipText("Delete a form");
+		deleteButton.setFocusable(false);
+		
+		pathButton.setBorder(BorderFactory.createEtchedBorder());
+		pathButton.setBorderPainted(false);
+		pathButton.setToolTipText("Path Calculator");
+		pathButton.setFocusable(false);
+		
 		nodeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				workspace.setState(DrawingState.INSERT_NODE);
@@ -70,10 +98,16 @@ public class GraphFrame extends JFrame {
 				workspace.setState(DrawingState.NORMAL);
 			}
 		});
+		pathButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				workspace.setState(DrawingState.SOLVER);
+			}
+		});
 		toolbar.add(nodeButton);
 		toolbar.add(linkButton);
 		toolbar.add(deleteButton);
 		toolbar.add(normalButton);
+		toolbar.add(pathButton);
 		contentPane.add(toolbar, "West");
 		toolbar.setCursor(PanneauUI.NORMAL_CURSOR);
 	}

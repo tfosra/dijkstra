@@ -10,13 +10,15 @@ import com.graphs.model.interfaces.INode;
 
 public class GraphSolver {
 
-	public final static int A_STAR_METHOD = 11;
+	public enum SolverMethod {
+		A_STAR_METHOD
+	}
 	
 	public final static long INFINITY = Long.MAX_VALUE;
 	
-	public static GraphPath shortestPath(IGraph graph, INode n1, INode n2, int method) {
+	public static GraphPath shortestPath(IGraph graph, INode n1, INode n2, SolverMethod method) {
 		switch (method) {
-		case (A_STAR_METHOD) : return aStarShortestPath(graph, n1, n2);
+		case A_STAR_METHOD : return aStarShortestPath(graph, n1, n2);
 		}
 		return null;
 	}
@@ -55,10 +57,10 @@ public class GraphSolver {
 			if (childs != null) {
 				for (int i = 0; i < childs.length; i++) {
 					nv = childs[i].getNumber();
-					kuv = Long.valueOf((String)graph.getLink(u, childs[i]).getProperty("k"));
+					kuv = (Long)graph.getLink(u, childs[i]).getProperty("k");
 					if ((p.contains(childs[i]) || q.contains(childs[i])) && (g[nv] <= g[nu] + kuv)) continue;
 					g[nv] = g[nu] + kuv;
-					f[nv] = g[nv] + Long.valueOf((String)childs[i].getProperty("h"));
+					f[nv] = g[nv] + (Long)childs[i].getProperty("h");
 					//childs[i].setProperty("parent", nu + "");
 					//childs[i].setProperty("g", g[nv] + "");
 					//childs[i].setProperty("f", f[nv] + "");

@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.graphs.model.Graph;
+import com.graphs.model.GraphPath;
 import com.graphs.model.interfaces.IGraph;
 import com.graphs.model.interfaces.ILink;
 import com.graphs.model.interfaces.INode;
+import com.graphs.model.solver.GraphSolver;
+import com.graphs.model.solver.GraphSolver.SolverMethod;
 import com.graphs.ui.FormUI.Etats;
 
 public class GraphUI {
@@ -29,7 +32,11 @@ public class GraphUI {
 	}
 	
 	public NodeUI getNode(int number) {
-		return nodes.get(number+"");
+		return nodes.get(number);
+	}
+	
+	public ArrayList<NodeUI> getNodes() {
+		return new ArrayList<NodeUI>(nodes.values());
 	}
 	
 	/**
@@ -160,9 +167,13 @@ public class GraphUI {
 	public void drawPath(GraphPathUI pathUI) {
 		for (FormUI f : nodes.values()) f.setState(Etats.NORMAL);
 		for (FormUI f : linksMap.values()) f.setState(Etats.NORMAL);
-		
 		for (FormUI f : pathUI.getPathNodes()) f.setState(Etats.SELECTED);
 		for (FormUI f : pathUI.getPathLinks()) f.setState(Etats.SELECTED);
+	}
+	
+	public void solvePath(NodeUI n1, NodeUI n2, SolverMethod method) {
+		GraphPath path = GraphSolver.shortestPath(graph, n1.getNode(), n2.getNode(), method);
+		drawPath(new GraphPathUI(this, path));
 	}
 
 }

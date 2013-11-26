@@ -105,6 +105,8 @@ public class LinkUI extends FormUI {
 			labelColor = Color.orange;
 			break;
 		case SELECTED:
+			formColor = Color.pink;
+			labelColor = Color.pink;
 			break;
 		case EDITING:
 			editForm();

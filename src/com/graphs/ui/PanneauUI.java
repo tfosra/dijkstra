@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -14,13 +15,16 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import com.graphs.model.solver.GraphSolver.SolverMethod;
 import com.graphs.ui.FormUI.Etats;
 
 public class PanneauUI extends JPanel implements MouseMotionListener, MouseListener{
@@ -31,7 +35,7 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	private static final long serialVersionUID = 1L;
 
 	public enum DrawingState {
-		INSERT_NODE, INSERT_LINK, DELETE_ELEMENT, NORMAL
+		INSERT_NODE, INSERT_LINK, DELETE_ELEMENT, NORMAL, SOLVER
 	}
 	
 	private final static Toolkit tk = Toolkit.getDefaultToolkit();
@@ -260,6 +264,30 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 			break;
 		case NORMAL:
 			setCursor(NORMAL_CURSOR);
+			break;
+		case SOLVER:
+			setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+			ArrayList<NodeUI> list = graph.getNodes();
+			String[] vals = new String[list.size()];
+			for (int i = 0; i < vals.length; i++) vals[i] = list.get(i).getNode().getNumber() + " - " + list.get(i).getNode().getProperty("name");
+			JComboBox<String> combo1 = new JComboBox<>(vals);
+			JComboBox<String> combo2 = new JComboBox<>(vals);
+			JPanel pan1 = new JPanel(new GridLayout(1, 0));
+			pan1.add(combo1);
+			pan1.add(combo2);
+			int option = JOptionPane.showConfirmDialog(null, pan1, "Shortest path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+			if (option == JOptionPane.OK_OPTION) {
+				String str1 = (String)combo1.getSelectedItem();
+				String str2 = (String)combo2.getSelectedItem();
+				str1 = str1.split("-")[0].trim();
+				str2 = str2.split("-")[0].trim();
+				int nbr1 = Integer.valueOf(str1);
+				int nbr2 = Integer.valueOf(str2);
+				NodeUI n1 = graph.getNode(nbr1);
+				NodeUI n2 = graph.getNode(nbr2);
+				graph.solvePath(n1, n2, SolverMethod.A_STAR_METHOD);
+				repaint();
+			}
 			break;
 		}
 		this.state = state;
