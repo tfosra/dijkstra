@@ -1,6 +1,7 @@
 package com.graphs.model.interfaces;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public interface IGraph {
 
@@ -21,6 +22,8 @@ public interface IGraph {
 	public ArrayList<ILink> getRelatedLinks(INode n);
 	
 	public void addLink(INode n1, INode n2);
+	
+	public void addLink(INode n1, INode n2, HashMap<String, Object> properties);
 	
 	public void removeLink(ILink lnk);
 	

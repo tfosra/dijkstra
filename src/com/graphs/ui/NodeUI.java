@@ -38,7 +38,7 @@ public class NodeUI extends FormUI {
 		labelColor = Color.magenta;
 		label = node.getNumber() + "";
 		node.setProperty("name", label);
-		node.setProperty("h", -1);
+		node.setProperty("h", -1L);
 	}
 	
 	public INode getNode() {

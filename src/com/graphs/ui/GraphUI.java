@@ -106,11 +106,15 @@ public class GraphUI {
 	 * @param noeud2 The end node
 	 */
 	public void addLink(NodeUI noeud1, NodeUI noeud2) {
+		addLink(noeud1, noeud2, null);
+	}
+	
+	public void addLink(NodeUI noeud1, NodeUI noeud2, HashMap<String, Object> properties) {
 		int n1 = noeud1.getNode().getNumber();
 		int n2 = noeud2.getNode().getNumber();
 		if (!nodes.containsKey(n1)) addNode(noeud1);
 		if (!nodes.containsKey(n2)) addNode(noeud2);
-		graph.addLink(noeud1.getNode(), noeud2.getNode());
+		graph.addLink(noeud1.getNode(), noeud2.getNode(), properties);
 		LinkUI lnk = new LinkUI(noeud1, noeud2, graph.getLink(noeud1.getNode(), noeud2.getNode()));
 		linksMap.put(n1 + "#" + n2, lnk);
 	}
@@ -174,6 +178,6 @@ public class GraphUI {
 	public void solvePath(NodeUI n1, NodeUI n2, SolverMethod method) {
 		GraphPath path = GraphSolver.shortestPath(graph, n1.getNode(), n2.getNode(), method);
 		drawPath(new GraphPathUI(this, path));
-	}
-
+	} 
+	
 }

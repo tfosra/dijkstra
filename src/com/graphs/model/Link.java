@@ -25,6 +25,13 @@ public class Link implements ILink {
 		properties = new HashMap<>();
 		properties.put("k", k + "");
 	}
+	
+	public Link(INode startNode, INode endNode, HashMap<String, Object> properties) {
+		this.startNode = startNode;
+		this.endNode = endNode;
+		this.properties = properties;
+		if (this.properties == null) this.properties = new HashMap<>();
+	}
 
 	public INode getStartNode() {
 		return startNode;

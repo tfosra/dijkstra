@@ -138,11 +138,15 @@ public class Graph implements IGraph {
 	 * @param noeud2 The end node
 	 */
 	public void addLink(INode noeud1, INode noeud2) {		
+		addLink(noeud1, noeud2, null);
+	}
+	
+	public void addLink(INode noeud1, INode noeud2, HashMap<String, Object> properties) {
 		int n1 = noeud1.getNumber();
 		int n2 = noeud2.getNumber();
 		if (!nodes.containsKey(n1)) nodes.put(n1, noeud1);
 		if (!nodes.containsKey(n2)) nodes.put(n2, noeud2);
-		ILink lnk = new Link(noeud1, noeud2);
+		ILink lnk = new Link(noeud1, noeud2, properties);
 		linksMap.put(n1 + "#" + n2, lnk);
 		HashSet<Integer> set;
 		if ((set = nextsMap.get(n1)) == null) set = new HashSet<>();
