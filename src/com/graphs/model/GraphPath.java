@@ -1,23 +1,19 @@
 package com.graphs.model;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 
-import com.graphs.model.interfaces.IGraph;
 import com.graphs.model.interfaces.ILink;
 import com.graphs.model.interfaces.INode;
 
 public class GraphPath {
 
-//	INode[] nodes;
-	LinkedList<INode> nodes;
+	private LinkedList<ILink> links;
 	
 	private long length;
-
-	private IGraph graph;
 	
-	public GraphPath(IGraph graph, LinkedList<INode> nodes) {
-		this.graph = graph;
-		this.nodes = nodes;
+	public GraphPath(LinkedList<ILink> links) {
+		this.links = links;
 		this.length = pathLength();
 	}
 	
@@ -27,39 +23,32 @@ public class GraphPath {
 	 */
 	public long pathLength() {
 		long res = 0;
-		INode n1 = nodes.getFirst(), n2;
-		for (int i = 1; i < nodes.size(); i++) {
-			n2 = nodes.get(i);
-			Long lng = (Long) graph.getLink(n1, n2).getProperty("k");
+		for (ILink lnk : links) {
+			Long lng = (Long) lnk.getProperty("k");
 			if (lng == null) return -1;
 			res += lng;
-			n1 = n2;
 		}
 		return res;
 	}
 	
 	public LinkedList<INode> getPathNodes() {
-		return this.nodes;
+		HashSet<INode> res = new HashSet<>();
+		for (ILink lnk : links) {
+			res.add(lnk.getStartNode());
+			res.add(lnk.getEndNode());
+		}
+		return new LinkedList<>(res) ;
 	}
 	
 	public LinkedList<ILink> getPathLinks() {
-		LinkedList<ILink> res = new LinkedList<>();
-		INode n1 = nodes.getFirst(), n2;
-		for (int i = 1; i < nodes.size(); i++) {
-			n2 = nodes.get(i);
-			ILink lnk = graph.getLink(n1, n2);
-			if (lnk == null) return null;
-			res.add(lnk);
-			n1 = n2;
-		}
-		return res;
+		return links;
 	}
 	
 	public String toString() {
-		String str = "Shortest path from " + nodes.getFirst() + " to " + nodes.getLast() + "\n"; 
+		String str = "Path from " + links.getFirst().getStartNode() + " to " + links.getLast().getEndNode() + "\n"; 
 		str += "GraphPath : ";
-		str += nodes.getFirst();
-		for (INode nd : nodes) str += " - " + nd;
+		str += links.getFirst().getStartNode();
+		for (ILink lnk : links) str += " - " + lnk.getEndNode();
 		str += "\nLength : " + length;
 		str += "\n";
 		return str;

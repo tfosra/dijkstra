@@ -12,6 +12,8 @@ public interface INode {
 	
 	public void setProperty(String key, Object value);
 	
+	public void setProperties(HashMap<String, Object> properties);
+	
 	public boolean isEndNode();
 	
 	public void setEndNode(boolean isEndNode);

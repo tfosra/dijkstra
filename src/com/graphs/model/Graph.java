@@ -30,7 +30,10 @@ public class Graph implements IGraph {
 	
 	private HashMap<String, ILink> linksMap;
 	
-	public Graph() {
+	private boolean isOriented;
+	
+	public Graph(boolean isOriented) {
+		this.isOriented = isOriented;
 		nodes = new HashMap<>();
 		nextsMap = new HashMap<>();
 		previousMap = new HashMap<>();
@@ -45,6 +48,17 @@ public class Graph implements IGraph {
 		nodes.values().toArray(nd);
 		Arrays.sort(nd);
 		return nd;
+	}
+	
+	/**
+	 * Returns all the links contained in the graph
+	 */
+	public ArrayList<ILink> getLinks() {
+		HashSet<ILink> hs = new HashSet<>();
+		for (ILink lnk : linksMap.values()) {
+			hs.add(lnk);
+		}
+		return new ArrayList<>(hs);
 	}
 
 	/**
@@ -90,13 +104,16 @@ public class Graph implements IGraph {
 
 	/**
 	 * Checks whether two nodes are linked together.</br>
-	 * Note that the type of links here are oriented links
+	 * Note that the type of links here can be oriented or not
 	 * @param n1 The start node
 	 * @param n2 The end node
-	 * @return true if n1 is the parent of n2, false if not
+	 * @return true if n1 is the parent of n2 in case of an oriented link or n1 and n2 are connected, false if not
 	 */
 	public boolean areLinked(INode n1, INode n2) {
-		return linksMap.containsKey(n1.getNumber() + "#" + n2.getNumber());
+		return 
+			   linksMap.containsKey(n1.getNumber() + "#" + n2.getNumber())
+				||
+			   linksMap.containsKey(n2.getNumber() + "#" + n1.getNumber());
 	}
 
 	/**
@@ -114,11 +131,14 @@ public class Graph implements IGraph {
 	public void removeNode(INode node) {
 		int n = node.getNumber();
 		nodes.remove(n);
+		HashSet<Integer> set;
 		if (nextsMap.containsKey(n)) {
 			int nd;
 			for (Iterator<Integer> it = nextsMap.get(n).iterator(); it.hasNext();) {
 				nd = it.next();
 				linksMap.remove(n + "#" + nd);
+				set = previousMap.get(nd);
+				if (set != null) set.remove(n);
 			}
 			nextsMap.remove(n);
 		}
@@ -127,6 +147,8 @@ public class Graph implements IGraph {
 			for (Iterator<Integer> it = previousMap.get(n).iterator(); it.hasNext();) {
 				nd = it.next();
 				linksMap.remove(nd + "#" + n);
+				set = nextsMap.get(nd);
+				if (set != null) set.remove(n);
 			}
 			previousMap.remove(n);
 		}
@@ -144,10 +166,11 @@ public class Graph implements IGraph {
 	public void addLink(INode noeud1, INode noeud2, HashMap<String, Object> properties) {
 		int n1 = noeud1.getNumber();
 		int n2 = noeud2.getNumber();
-		if (!nodes.containsKey(n1)) nodes.put(n1, noeud1);
-		if (!nodes.containsKey(n2)) nodes.put(n2, noeud2);
-		ILink lnk = new Link(noeud1, noeud2, properties);
+		if (!nodes.containsKey(n1)) addNode(noeud1);;
+		if (!nodes.containsKey(n2)) addNode(noeud2);;
+		ILink lnk = new Link(noeud1, noeud2, isOriented, properties);
 		linksMap.put(n1 + "#" + n2, lnk);
+		if (!isOriented) linksMap.put(n2 + "#" + n1, lnk);
 		HashSet<Integer> set;
 		if ((set = nextsMap.get(n1)) == null) set = new HashSet<>();
 		set.add(n2);
@@ -155,13 +178,21 @@ public class Graph implements IGraph {
 		if ((set = previousMap.get(n2)) == null) set = new HashSet<>();
 		set.add(n1);
 		previousMap.put(n2, set);
+		if (!isOriented) {
+			if ((set = nextsMap.get(n2)) == null) set = new HashSet<>();
+			set.add(n1);
+			nextsMap.put(n2, set);
+			if ((set = previousMap.get(n1)) == null) set = new HashSet<>();
+			set.add(n2);
+			previousMap.put(n1, set);
+		}
 	}
 
 	/**
 	 * Retrieves a given link from the graph
 	 * @param n1 The start node
 	 * @param n2 The end node
-	 * @return The link between n1 and n2 or null if it doesn't exi
+	 * @return The link between n1 and n2 or null if it doesn't exist
 	 */
 	public ILink getLink(INode n1, INode n2) {
 		return linksMap.get(n1.getNumber() + "#" + n2.getNumber());
@@ -178,6 +209,11 @@ public class Graph implements IGraph {
 			nextsMap.get(n1).remove(n2);
 			previousMap.get(n2).remove(n1);
 		}
+		if (!isOriented && linksMap.containsKey(n2 + "#" + n1)) {
+			linksMap.remove(n2 + "#" + n1);
+			nextsMap.get(n2).remove(n1);
+			previousMap.get(n1).remove(n2);
+		}
 	}
 	
 	public void addLink(ILink lnk) {
@@ -191,6 +227,14 @@ public class Graph implements IGraph {
 		if ((set = previousMap.get(n2)) == null) set = new HashSet<>();
 		set.add(n1);
 		previousMap.put(n2, set);
+		if (!isOriented) {
+			if ((set = nextsMap.get(n2)) == null) set = new HashSet<>();
+			set.add(n1);
+			nextsMap.put(n2, set);
+			if ((set = previousMap.get(n1)) == null) set = new HashSet<>();
+			set.add(n2);
+			previousMap.put(n1, set);
+		}
 	}
 
 	/**
@@ -239,7 +283,7 @@ public class Graph implements IGraph {
 	
 	@Override
 	public ArrayList<ILink> getRelatedLinks(INode node) {
-		ArrayList<ILink> res = new ArrayList<>();
+		HashSet<ILink> res = new HashSet<>();
 		int n = node.getNumber();
 		int nd;
 		if (nextsMap.containsKey(n)) {
@@ -254,7 +298,20 @@ public class Graph implements IGraph {
 				res.add(linksMap.get(nd + "#" + n));
 			}
 		}
-		return res;
+		return new ArrayList<>(res);
+	}
+	
+	@Override
+	public void clear() {
+		nodes.clear();
+		nextsMap.clear();
+		previousMap.clear();
+		linksMap.clear();
 	}
 
+	@Override
+	public boolean isOriented() {
+		return this.isOriented;
+	}
+	
 }

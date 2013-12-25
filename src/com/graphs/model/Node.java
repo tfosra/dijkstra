@@ -41,6 +41,11 @@ public class Node implements INode, Comparable<INode> {
 	public void setProperty(String key, Object value) {
 		properties.put(key, value);
 	}
+	
+	public void setProperties(HashMap<String, Object> properties) {
+		this.properties = properties;
+		if (properties == null) this.properties = new HashMap<>();
+	}
 
 	public int compareTo(INode nd) {
 		if (getNumber() < nd.getNumber()) return -1;

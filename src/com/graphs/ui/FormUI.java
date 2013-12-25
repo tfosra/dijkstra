@@ -8,7 +8,7 @@ import java.awt.Rectangle;
 public abstract class FormUI {
 	
 	public enum Etats {
-		OVER, CLICKED, SELECTED, NORMAL, EDITING
+		OVER, CLICKED, SELECTED, NORMAL, EDITING, GRAYED
 	}
 	
 	protected Color formColor;
@@ -17,6 +17,8 @@ public abstract class FormUI {
 	protected Rectangle rect;
 	protected boolean isDraggable;
 	protected Etats etat;
+	protected boolean displayBorders = false;
+	protected boolean displayLabel = true;
 	
 	public abstract void renderForm(Graphics g);
 	
@@ -32,6 +34,14 @@ public abstract class FormUI {
 		return isDraggable;
 	}
 	
+	public boolean displayLabel() {
+		return this.displayLabel;
+	}
+	
+	public void setDisplayLabel(boolean display) {
+		this.displayLabel = display;
+	}
+	
 	public Etats getState() {
 		return this.etat;
 	}
@@ -42,6 +52,8 @@ public abstract class FormUI {
 	
 	public abstract void setState(Etats etat);
 	
-	public abstract void editForm();
+	public abstract boolean editForm();
+	
+	public abstract void refreshProperties();
 	
 }

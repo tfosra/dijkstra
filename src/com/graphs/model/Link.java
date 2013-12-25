@@ -12,23 +12,29 @@ public class Link implements ILink {
 	private INode endNode;
 	
 	private HashMap<String, Object> properties;
+
+	private boolean oriented;
 	
 	public Link(INode startNode, INode endNode) {
-		this.startNode = startNode;
-		this.endNode = endNode;
-		properties = new HashMap<>();
+		this(startNode, endNode, 0L);
 	}
 	
 	public Link(INode startNode, INode endNode, long k) {
+		this(startNode, endNode, k, true);
+	}
+	
+	public Link(INode startNode, INode endNode, long k, boolean oriented) {
 		this.startNode = startNode;
 		this.endNode = endNode;
+		this.oriented = oriented;
 		properties = new HashMap<>();
 		properties.put("k", k + "");
 	}
 	
-	public Link(INode startNode, INode endNode, HashMap<String, Object> properties) {
+	public Link(INode startNode, INode endNode, boolean oriented, HashMap<String, Object> properties) {
 		this.startNode = startNode;
 		this.endNode = endNode;
+		this.oriented = oriented;
 		this.properties = properties;
 		if (this.properties == null) this.properties = new HashMap<>();
 	}
@@ -39,6 +45,11 @@ public class Link implements ILink {
 
 	public INode getEndNode() {
 		return endNode;
+	}
+	
+	@Override
+	public boolean isOriented() {
+		return oriented;
 	}
 	
 	public HashMap<String, Object> getProperties() {
@@ -53,6 +64,8 @@ public class Link implements ILink {
 		properties.put(key, value);
 	}
 	
-	
+	public void setProperties(HashMap<String, Object> properties) {
+		this.properties = properties;	
+	}
 
 }

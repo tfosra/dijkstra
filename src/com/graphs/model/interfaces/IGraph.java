@@ -7,6 +7,8 @@ public interface IGraph {
 
 	public INode[] getNodes();
 	
+	public ArrayList<ILink> getLinks();
+	
 	public INode[] getNextElements(INode n);
 	
 	public INode[] getPreviousElements(INode n);
@@ -34,5 +36,9 @@ public interface IGraph {
 	public void addLink(ILink lnk);
 	
 	public INode[] getFinalNodes();
+	
+	public void clear();
+	
+	public boolean isOriented();
 	
 }

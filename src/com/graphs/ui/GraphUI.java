@@ -2,6 +2,7 @@ package com.graphs.ui;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,7 +15,7 @@ import com.graphs.model.solver.GraphSolver;
 import com.graphs.model.solver.GraphSolver.SolverMethod;
 import com.graphs.ui.FormUI.Etats;
 
-public class GraphUI {
+public class GraphUI implements Cloneable {
 
 	/**
 	 * Devra contenir les nodes du graphe où l'entier représente le numéro du noeud (identifiant) dans le graphe
@@ -25,10 +26,10 @@ public class GraphUI {
 	
 	private IGraph graph;
 	
-	public GraphUI() {
+	public GraphUI(boolean isOriented) {
 		nodes = new HashMap<>();
 		linksMap = new HashMap<>();
-		graph = new Graph();
+		graph = new Graph(isOriented);
 	}
 	
 	public NodeUI getNode(int number) {
@@ -97,7 +98,18 @@ public class GraphUI {
 		ArrayList<ILink> relatedLinks = graph.getRelatedLinks(node.getNode());
 		for (ILink lnk : relatedLinks) {
 			linksMap.remove(lnk.getStartNode().getNumber() + "#" + lnk.getEndNode().getNumber());
+			linksMap.remove(lnk.getEndNode().getNumber() + "#" + lnk.getStartNode().getNumber());
 		}
+		graph.removeNode(node.getNode());
+	}
+	
+	public ArrayList<LinkUI> getRelatedLinks(NodeUI node) {
+		ArrayList<LinkUI> res = new ArrayList<>();
+		ArrayList<ILink> relatedLinks = graph.getRelatedLinks(node.getNode());
+		for (ILink lnk : relatedLinks) {
+			res.add(getLink(getNode(lnk.getStartNode().getNumber()), getNode(lnk.getEndNode().getNumber())));
+		}
+		return res;
 	}
 	
 	/**
@@ -116,7 +128,11 @@ public class GraphUI {
 		if (!nodes.containsKey(n2)) addNode(noeud2);
 		graph.addLink(noeud1.getNode(), noeud2.getNode(), properties);
 		LinkUI lnk = new LinkUI(noeud1, noeud2, graph.getLink(noeud1.getNode(), noeud2.getNode()));
+		if (properties == null) lnk.setState(Etats.EDITING);
 		linksMap.put(n1 + "#" + n2, lnk);
+		if (!isOriented()) {
+			linksMap.put(n2 + "#" + n1, lnk);
+		}
 	}
 
 	/**
@@ -137,6 +153,9 @@ public class GraphUI {
 		int n2 = lnk.getEndNode().getNode().getNumber();
 		graph.removeLink(lnk.getLink());
 		linksMap.remove(n1 + "#" + n2);
+		if (!isOriented()) {
+			linksMap.remove(n2 + "#" + n1);
+		}
 	}
 	
 	public void removeForm(FormUI form) {
@@ -168,16 +187,46 @@ public class GraphUI {
 		return null;
 	}
 	
+	public ArrayList<FormUI> getSelectedForms(Rectangle rect) {
+		ArrayList<FormUI> res = new ArrayList<>();
+		for (NodeUI nd : nodes.values()) {
+			if (rect.contains(nd.getRectange())) res.add(nd);
+		}
+		for (LinkUI lnk : linksMap.values()) {
+			if (rect.contains(lnk.getRectange())) res.add(lnk);
+		}
+		return res;
+	}
+	
 	public void drawPath(GraphPathUI pathUI) {
 		for (FormUI f : nodes.values()) f.setState(Etats.NORMAL);
-		for (FormUI f : linksMap.values()) f.setState(Etats.NORMAL);
+		for (FormUI f : linksMap.values()) f.setState(Etats.GRAYED);
 		for (FormUI f : pathUI.getPathNodes()) f.setState(Etats.SELECTED);
 		for (FormUI f : pathUI.getPathLinks()) f.setState(Etats.SELECTED);
 	}
 	
-	public void solvePath(NodeUI n1, NodeUI n2, SolverMethod method) {
-		GraphPath path = GraphSolver.shortestPath(graph, n1.getNode(), n2.getNode(), method);
+	public long solvePath(SolverMethod method, Object...params) {
+		GraphPath path = GraphSolver.solvePath(graph, method, params);
 		drawPath(new GraphPathUI(this, path));
-	} 
+		return path.pathLength();
+	}
+	
+	public void clear() {
+		linksMap.clear();
+		nodes.clear();
+		graph.clear();
+	}
+	
+	public boolean isOriented() {
+		return graph.isOriented();
+	}
+	
+	public void setDisplayNodeLabels(boolean display) {
+		for (FormUI f : nodes.values()) f.setDisplayLabel(display);
+	}
+	
+	public void setDisplayLinkLabels(boolean display) {
+		for (FormUI f : linksMap.values()) f.setDisplayLabel(display);
+	}
 	
 }
