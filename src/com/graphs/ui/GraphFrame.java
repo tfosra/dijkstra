@@ -1,6 +1,8 @@
 package com.graphs.ui;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -42,8 +44,7 @@ public class GraphFrame extends JFrame {
 	
 	public GraphFrame() {
 		setTitle("Path Solver v1.00");
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setLocationRelativeTo(null);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);	
 		initComponents();
 		initToolbars();
 		initMenus();
@@ -187,6 +188,9 @@ public class GraphFrame extends JFrame {
 		scroll.setSize(workspace.getSize());
 		setMaximumSize(workspace.getPreferredSize());
 		setSize(workspace.getSize());
+		Point centerPoint = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+		centerPoint.translate(-getSize().width / 2, -getSize().height / 2);
+		setLocation(centerPoint);
 	}
 	
 	public static void main(String[] args) {

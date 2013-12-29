@@ -4,9 +4,11 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -67,7 +69,7 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	public final static ImageIcon REDO_ICONE = new ImageIcon(ImageIcon.class.getResource("/image/redo-icone2.png"));
 	
 	private Image bufferImage = null;						// The buffer image used for double buffering the panel display
-	private Graphics bufferImageGraphics;					// The graphics object of the bufferImage
+	private Graphics2D bufferImageGraphics;					// The graphics object of the bufferImage
 	
 	private LinkedList<GraphState> undoList;
 	private LinkedList<GraphState> redoList;
@@ -179,18 +181,14 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	private void refreshDisplay() {
 		if (bufferImage == null) {
 			bufferImage = createImage(getWidth(), getHeight());
-			bufferImageGraphics = bufferImage.getGraphics();
+			bufferImageGraphics = (Graphics2D) bufferImage.getGraphics();
 		}
 		bufferImageGraphics.drawImage(fond, 0, 0, this);
 		graph.renderGraph(bufferImageGraphics);
 		if (state == DrawingState.SELECTION) {
 			if (previousOrign == null || nextOrigin == null) return;
 			bufferImageGraphics.setColor(Color.red);
-			int x = Math.min(previousOrign.x, nextOrigin.x);
-			int y = Math.min(previousOrign.y, nextOrigin.y);
-			int width = Math.abs(previousOrign.x - nextOrigin.x);
-			int height = Math.abs(previousOrign.y - nextOrigin.y);
-			bufferImageGraphics.drawRect(x, y, width, height);
+			bufferImageGraphics.draw(graphSelection.getBounds());
 		}
 	}
 	
@@ -428,9 +426,9 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		}
 		previousForm = f;
 		if (f != null) {
-//			graphSelection.addForm(f);
-//			graphSelection.beginDrag();
-//			graphSelection.setOrigin(e.getPoint());
+			graphSelection.setSelection(f);
+			graphSelection.beginDrag();
+			graphSelection.setOrigin(e.getPoint());
 		}
 		else { // Si on veut effectuer une selection (click dans le vide)
 			setState(DrawingState.SELECTION);
@@ -461,6 +459,9 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 				graphSelection.setOrigin(e.getPoint());
 				graphSelection.beginDrag();
 			}
+		}
+		else {
+			previousOrign = e.getPoint();
 		}
 	}
 	
@@ -506,7 +507,8 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	}
 	
 	private void mouseReleasedSelection(MouseEvent e) {
-		// Nothing here
+		graphSelection.endDrag();
+		previousOrign = nextOrigin = null;
 	}
 	
 	// Evènements quand on déplace la souris
@@ -517,11 +519,8 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 			previousForm.setState(Etats.NORMAL);
 			previousForm = f;
 		}
-		if (f != null) {
-			// TODO A revoir
-//			if (!hasDraggedSelection) hasDraggedSelection = true;
-//			f.setState(Etats.CLICKED);
-//			f.moveTo(e.getPoint());
+		if (graphSelection.isDragging()) {
+			graphSelection.dragTo(e.getPoint());
 		}
 	}
 	
@@ -562,10 +561,16 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	
 	private void mouseDraggedSelection(MouseEvent e) {
 		// TODO Rechercher toutes les formes prises dans le rectangle de la sélection
-		nextOrigin = e.getPoint();
-		if (previousOrign != null && nextOrigin != null) {
-			ArrayList<FormUI> selectionList = graph.getSelectedForms(new Line2D.Double(previousOrign, nextOrigin).getBounds());
-			graphSelection.setSelection(selectionList);
+		if (graphSelection.isDragging()) {
+			graphSelection.dragTo(e.getPoint());
+		} else {
+			nextOrigin = e.getPoint();
+			if (previousOrign != null && nextOrigin != null) {
+				Rectangle selectionBounds = new Line2D.Double(previousOrign, nextOrigin).getBounds();
+				ArrayList<FormUI> selectionList = graph.getSelectedForms(selectionBounds);
+				graphSelection.setSelection(selectionList);
+				graphSelection.setBounds(selectionBounds);
+			}
 		}
 	}
 	

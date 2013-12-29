@@ -15,6 +15,8 @@ public class GraphUISelection {
 	
 	private Rectangle bounds;
 	
+	private boolean dragging;
+	
 	public GraphUISelection() {
 		forms = new LinkedList<>();
 		originPoint = new Point();
@@ -75,6 +77,7 @@ public class GraphUISelection {
 	}
 	
 	public void beginDrag() {
+		dragging = true;
 		for (FormUI f : forms) {
 			f.setState(Etats.CLICKED);
 		}
@@ -84,6 +87,7 @@ public class GraphUISelection {
 		for (FormUI f : forms) {
 			f.setState(Etats.SELECTED);
 		}
+		dragging = false;
 	}
 	
 	public boolean containsForm(FormUI f) {
@@ -98,11 +102,12 @@ public class GraphUISelection {
 		return this.bounds;
 	}
 	
-	public void moveTo(Point p) {
+	public void dragTo(Point p) {
 		if (isEmpty()) return;
 		int tx = p.x - originPoint.x;
 		int ty = p.y - originPoint.y;
 		translate(tx, ty);
+		originPoint = p;
 	}
 	
 	public void translate(int tx, int ty) {
@@ -111,6 +116,11 @@ public class GraphUISelection {
 			if (node instanceof LinkUI) continue;
 			((NodeUI)node).translate(tx, ty);
 		}
+		this.bounds.translate(tx, ty);
+	}
+	
+	public boolean isDragging() {
+		return this.dragging;
 	}
 	
 	public boolean isEmpty() {
