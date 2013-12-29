@@ -69,15 +69,13 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	private Image bufferImage = null;						// The buffer image used for double buffering the panel display
 	private Graphics bufferImageGraphics;					// The graphics object of the bufferImage
 	
-	private ArrayList<FormUI> selectionList;
 	private LinkedList<GraphState> undoList;
 	private LinkedList<GraphState> redoList;
-	private boolean groupSelection;
-	private boolean hasDraggedNode;
+	
+	private boolean hasDraggedSelection;
 	private GraphUI graph;
+	private GraphUISelection graphSelection;
 	private FormUI previousForm;
-	private FormUI selectedForm;
-	private FormUI draggedForm;
 	private DrawingState state;
 	private Point previousOrign, nextOrigin;
 	private Image fond;
@@ -107,7 +105,7 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		JCheckBox check = new JCheckBox("Oriented graph");
 		JOptionPane.showMessageDialog(null, check);
 		graph = new GraphUI(check.isSelected());
-		selectionList = new ArrayList<>();
+		graphSelection = new GraphUISelection();
 		undoList = new LinkedList<>();
 		redoList = new LinkedList<>();
 	}
@@ -430,12 +428,13 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		}
 		previousForm = f;
 		if (f != null) {
-			draggedForm = f;
-			f.setState(Etats.CLICKED);
+//			graphSelection.addForm(f);
+//			graphSelection.beginDrag();
+//			graphSelection.setOrigin(e.getPoint());
 		}
 		else { // Si on veut effectuer une selection (click dans le vide)
 			setState(DrawingState.SELECTION);
-			if (selectionList != null) for (FormUI form : selectionList) form.setState(Etats.NORMAL);
+			graphSelection.clearSelection();
 		}
 	}
 	
@@ -458,7 +457,10 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	private void mousePressedSelection(MouseEvent e) {
 		FormUI f = graph.getPointedForm(e.getPoint());
 		if (f != null) {
-			// XXX
+			if (graphSelection.containsForm(f)) {
+				graphSelection.setOrigin(e.getPoint());
+				graphSelection.beginDrag();
+			}
 		}
 	}
 	
@@ -472,15 +474,16 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		if (f != null) {
 			f.setState(Etats.OVER);
 		}
-		if (hasDraggedNode) {
-			GraphState gs = new GraphState(EnumAction.MOVE_NODE);
-			gs.setProperty("num", ((NodeUI)draggedForm).getNode().getNumber());
-			gs.setProperty("old_centre", previousOrign.clone());
-			gs.setProperty("new_centre", ((NodeUI)draggedForm).getCenter().clone());
-			saveUndoAction(gs);
-			hasDraggedNode = false;
+		if (hasDraggedSelection) {
+			// TODO modifier cette partie pour pouvoir gérer le undo d'un déplacement multiple
+//			GraphState gs = new GraphState(EnumAction.MOVE_NODE);
+//			gs.setProperty("num", ((NodeUI)draggedForm).getNode().getNumber());
+//			gs.setProperty("old_centre", previousOrign.clone());
+//			gs.setProperty("new_centre", ((NodeUI)draggedForm).getCenter().clone());
+//			saveUndoAction(gs);
+//			hasDraggedSelection = false;
 		}
-		draggedForm = null;
+		graphSelection.endDrag();
 		previousOrign = nextOrigin = null;
 		setState(DrawingState.NORMAL);
 		repaint();
@@ -515,9 +518,10 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 			previousForm = f;
 		}
 		if (f != null) {
-			if (!hasDraggedNode) hasDraggedNode = true;
-			f.setState(Etats.CLICKED);
-			f.moveTo(e.getPoint());
+			// TODO A revoir
+//			if (!hasDraggedSelection) hasDraggedSelection = true;
+//			f.setState(Etats.CLICKED);
+//			f.moveTo(e.getPoint());
 		}
 	}
 	
@@ -526,16 +530,17 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	}
 	
 	private void mouseDraggedInsertLink(MouseEvent e) {
-		FormUI f = graph.getPointedForm(e.getPoint());
-		if (previousForm != null) {
-			previousForm.setState(Etats.NORMAL);
-			previousForm = f;
-		}
-		if (f != null) {
-			if (!hasDraggedNode) hasDraggedNode = true;
-			f.setState(Etats.CLICKED);
-			f.moveTo(e.getPoint());
-		}
+		// TODO A revoir
+//		FormUI f = graph.getPointedForm(e.getPoint());
+//		if (previousForm != null) {
+//			previousForm.setState(Etats.NORMAL);
+//			previousForm = f;
+//		}
+//		if (f != null) {
+//			if (!hasDraggedSelection) hasDraggedSelection = true;
+//			f.setState(Etats.CLICKED);
+//			f.moveTo(e.getPoint());
+//		}
 	}
 	
 	private void mouseDraggedInsertNode(MouseEvent e) {
@@ -543,41 +548,35 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 	}
 	
 	private void mouseDraggedSolver(MouseEvent e) {
-		FormUI f = graph.getPointedForm(e.getPoint());
-//		if (previousForm != null) {
-//			previousForm.setState(Etats.NORMAL);
-//			previousForm = f;
+		// TODO A revoir
+//		FormUI f = graph.getPointedForm(e.getPoint());
+////		if (previousForm != null) {
+////			previousForm.setState(Etats.NORMAL);
+////			previousForm = f;
+////		}
+//		if (f != null) {
+////			f.setState(Etats.CLICKED);
+//			f.moveTo(e.getPoint());
 //		}
-		if (f != null) {
-//			f.setState(Etats.CLICKED);
-			f.moveTo(e.getPoint());
-		}
 	}
 	
 	private void mouseDraggedSelection(MouseEvent e) {
 		// TODO Rechercher toutes les formes prises dans le rectangle de la sélection
 		nextOrigin = e.getPoint();
-		if (selectionList != null) {
-			for (FormUI form : selectionList) {
-				form.setState(Etats.NORMAL);
-			}
-		}
 		if (previousOrign != null && nextOrigin != null) {
-			selectionList = graph.getSelectedForms(new Line2D.Double(previousOrign, nextOrigin).getBounds());
-		}
-		for (FormUI form : selectionList) {
-			form.setState(Etats.SELECTED);
+			ArrayList<FormUI> selectionList = graph.getSelectedForms(new Line2D.Double(previousOrign, nextOrigin).getBounds());
+			graphSelection.setSelection(selectionList);
 		}
 	}
 	
 	// Evènements quand on bouge la souris sans toutefois cliquer
 	private void mouseMovedNormal(MouseEvent e) {
 		FormUI f = graph.getPointedForm(e.getPoint());
-		if (previousForm != null && previousForm != selectedForm) {
+		if (previousForm != null && !graphSelection.containsForm(previousForm)) {
 			previousForm.setState(Etats.NORMAL);
 		}
 		previousForm = f;
-		if (f != null && f != selectedForm) {
+		if (f != null && !graphSelection.containsForm(previousForm)) {
 			f.setState(Etats.OVER);
 		}
 		if (f != null) {
@@ -622,13 +621,11 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 			}
 			previousForm = f;
 			if (f != null) editForm(f);
-			
 		}
 		else if (e.isControlDown()) {
 			setState(DrawingState.SELECTION);
-			selectionList = new ArrayList<>();
-			selectionList.add(f);
-			f.setState(Etats.SELECTED);
+			graphSelection.clearSelection();
+			graphSelection.addForm(f);
 		}
 		repaint();
 	}
@@ -645,8 +642,8 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		}
 		else {
 			deleteForm(f);
-			if (previousForm == selectedForm) previousForm = null;
-			selectedForm = null;
+			previousForm = null;
+			graphSelection.clearSelection();
 		}
 	}
 	
@@ -658,12 +655,13 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		}
 		if (e.getClickCount() != 1) return;
 		if (f == null) {
-			if (selectedForm != null) selectedForm.setState(Etats.NORMAL);
-			previousForm = selectedForm = null;
+			graphSelection.clearSelection();
+			previousForm = null;
 			setState(DrawingState.NORMAL);
 		}
 		else {
 			if (f instanceof NodeUI) {
+				NodeUI selectedForm = (NodeUI) graphSelection.getFirstSelected();
 				if (selectedForm != null && !selectedForm.equals(f)) {
 					graph.addLink((NodeUI)selectedForm, (NodeUI)f);
 					
@@ -675,12 +673,9 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 					gs.setProperty("props", graph.getLink(n1, n2).getLink().getProperties());
 					saveUndoAction(gs);
 					
-					selectedForm.setState(Etats.NORMAL);
-					selectedForm = null;
+					graphSelection.clearSelection();
 				} else if (!f.equals(selectedForm)) {
-					//selectedForm.setState(Etats.NORMAL);
-					selectedForm = f;
-					selectedForm.setState(Etats.SELECTED);
+					graphSelection.addForm(f);
 				}
 			}
 			else {
@@ -723,26 +718,15 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 			return;
 		}
 		if (f == null) {
-			groupSelection = false;
-			if (selectionList != null) for (FormUI form : selectionList) form.setState(Etats.NORMAL);
+			graphSelection.clearSelection();
 			setState(DrawingState.NORMAL);
 		}
 		else {
 			if (e.isControlDown()) { // Si on a cliqué en maintenant la touche ctrl appuyée
-				if (selectionList.contains(f)){
-					selectionList.remove(f);
-					f.setState(Etats.NORMAL);
-				}
-				else {
-					selectionList.add(f);
-					f.setState(Etats.SELECTED);
-				}
+				graphSelection.updateSelection(f);
 			}
 			else {
-				if (selectionList != null) for (FormUI form : selectionList) form.setState(Etats.SELECTED);
-				f.setState(Etats.SELECTED);
-				selectionList.clear();
-				selectionList.add(f);
+				graphSelection.setSelection(f);
 			}
 		}
 		repaint();

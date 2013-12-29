@@ -1,39 +1,69 @@
 package com.graphs.ui;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.awt.Rectangle;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.graphs.ui.FormUI.Etats;
 
 public class GraphUISelection {
 
-	private HashSet<NodeUI> nodes;
+	private LinkedList<FormUI> forms;
 	
 	private Point originPoint;
 	
+	private Rectangle bounds;
+	
 	public GraphUISelection() {
-		nodes = new HashSet<>();
+		forms = new LinkedList<>();
 		originPoint = new Point();
+		bounds = new Rectangle();
 	}
 	
-	public void addNode(NodeUI n) {
-		nodes.add(n);
+	public void updateSelection(FormUI f) {
+		if (containsForm(f)) removeForm(f);
+		else addForm(f);
 	}
 	
-	public void removeNode(NodeUI n) {
-		nodes.remove(n);
+	public void addForm(FormUI f) {
+		if (f == null) return;
+		forms.add(f);
+		f.setState(Etats.SELECTED);
 	}
 	
-	public ArrayList<NodeUI> getSelection() {
-		return new ArrayList<>(nodes);
+	public void removeForm(FormUI f) {
+		if (f == null) return;
+		forms.remove(f);
+		f.setState(Etats.NORMAL);
 	}
 	
-	public void setSelection(ArrayList<NodeUI> nodes) {
-		this.nodes.clear();
-		this.nodes.addAll(nodes);
+	public List<FormUI> getSelection() {
+		return forms;
+	}
+	
+	public FormUI getFirstSelected() {
+		return forms.peekFirst();
+	}
+	
+	public void setSelection(FormUI f) {
+		clearSelection();
+		addForm(f);
+	}
+	
+	public void setSelection(List<FormUI> forms) {
+		clearSelection();
+		this.forms.addAll(forms);
+		for (FormUI node : this.forms) {
+			node.setState(Etats.SELECTED);
+		}
 	}
 	
 	public void clearSelection() {
-		nodes.clear();
+		for (FormUI node : this.forms) {
+			node.setState(Etats.NORMAL);
+		}
+		forms.clear();
 	}
 	
 	public void setOrigin(Point origin) {
@@ -44,16 +74,47 @@ public class GraphUISelection {
 		return this.originPoint;
 	}
 	
+	public void beginDrag() {
+		for (FormUI f : forms) {
+			f.setState(Etats.CLICKED);
+		}
+	}
+	
+	public void endDrag() {
+		for (FormUI f : forms) {
+			f.setState(Etats.SELECTED);
+		}
+	}
+	
+	public boolean containsForm(FormUI f) {
+		return forms.contains(f);
+	}
+	
+	public void setBounds(Rectangle bounds) {
+		this.bounds = bounds;
+	}
+	
+	public Rectangle getBounds() {
+		return this.bounds;
+	}
+	
 	public void moveTo(Point p) {
+		if (isEmpty()) return;
 		int tx = p.x - originPoint.x;
 		int ty = p.y - originPoint.y;
 		translate(tx, ty);
 	}
 	
 	public void translate(int tx, int ty) {
-		for (NodeUI node : nodes) {
-			node.translate(tx, ty);
+		if (isEmpty()) return;
+		for (FormUI node : forms) {
+			if (node instanceof LinkUI) continue;
+			((NodeUI)node).translate(tx, ty);
 		}
+	}
+	
+	public boolean isEmpty() {
+		return forms.isEmpty();
 	}
 
 }
