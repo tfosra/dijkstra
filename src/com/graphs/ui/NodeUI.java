@@ -206,9 +206,14 @@ public class NodeUI extends FormUI {
 		return true;
 	}
 
-	@Override
-	public void drag(Point p) {
+	public void moveTo(Point p) {
 		center = p;
+		this.x = center.x;
+		this.y = center.y;
+	}
+	
+	public void translate(int tx, int ty) {
+		center.translate(tx, ty);
 		this.x = center.x;
 		this.y = center.y;
 	}

@@ -46,7 +46,7 @@ public abstract class FormUI {
 		return this.etat;
 	}
 	
-	public abstract void drag(Point p);
+	public abstract void moveTo(Point p);
 	
 	public abstract boolean isOverForm(Point p);
 	

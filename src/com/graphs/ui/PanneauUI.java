@@ -517,7 +517,7 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		if (f != null) {
 			if (!hasDraggedNode) hasDraggedNode = true;
 			f.setState(Etats.CLICKED);
-			f.drag(e.getPoint());
+			f.moveTo(e.getPoint());
 		}
 	}
 	
@@ -534,7 +534,7 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 		if (f != null) {
 			if (!hasDraggedNode) hasDraggedNode = true;
 			f.setState(Etats.CLICKED);
-			f.drag(e.getPoint());
+			f.moveTo(e.getPoint());
 		}
 	}
 	
@@ -550,7 +550,7 @@ public class PanneauUI extends JPanel implements MouseMotionListener, MouseListe
 //		}
 		if (f != null) {
 //			f.setState(Etats.CLICKED);
-			f.drag(e.getPoint());
+			f.moveTo(e.getPoint());
 		}
 	}
 	

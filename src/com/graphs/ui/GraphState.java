@@ -177,7 +177,7 @@ public class GraphState {
 		int num = (int)properties.get("num");
 		Point old_centre = (Point)properties.get("old_centre");
 		NodeUI node = graph.getNode(num);
-		node.drag((Point) old_centre.clone());
+		node.moveTo((Point) old_centre.clone());
 	}
 	
 	/**
@@ -333,7 +333,7 @@ public class GraphState {
 		int num = (int)properties.get("num");
 		Point new_centre = (Point)properties.get("new_centre");
 		NodeUI node = graph.getNode(num);
-		node.drag((Point) new_centre.clone());
+		node.moveTo((Point) new_centre.clone());
 	}
 	
 	/**

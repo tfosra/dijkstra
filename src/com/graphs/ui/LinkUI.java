@@ -191,7 +191,7 @@ public class LinkUI extends FormUI {
 	}
 
 	@Override
-	public void drag(Point p) {}
+	public void moveTo(Point p) {}
 	
 	@Override
 	public String toString() {
